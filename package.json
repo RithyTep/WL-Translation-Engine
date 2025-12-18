@@ -1,0 +1,89 @@
+{
+  "name": "kirby-i18n",
+  "displayName": "Kirby i18n Translator",
+  "description": "IntelliSense autocomplete, hover preview, and translation management for Vue i18n projects with 13 language support",
+  "version": "1.0.0",
+  "publisher": "rithytep",
+  "license": "MIT",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rithytep/kirby-i18n"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "i18n",
+    "vue",
+    "translation",
+    "localization",
+    "internationalization"
+  ],
+  "activationEvents": [
+    "onLanguage:vue",
+    "onLanguage:typescript",
+    "onLanguage:javascript"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "kirby-i18n.addTranslation",
+        "title": "Kirby i18n: Add New Translation"
+      },
+      {
+        "command": "kirby-i18n.searchKey",
+        "title": "Kirby i18n: Search Translation Key"
+      },
+      {
+        "command": "kirby-i18n.refresh",
+        "title": "Kirby i18n: Refresh Translation Cache"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "kirby-i18n.addTranslation",
+        "key": "ctrl+shift+t",
+        "mac": "cmd+shift+t"
+      },
+      {
+        "command": "kirby-i18n.searchKey",
+        "key": "ctrl+shift+k",
+        "mac": "cmd+shift+k"
+      }
+    ],
+    "configuration": {
+      "title": "Kirby i18n",
+      "properties": {
+        "kirby-i18n.langPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the language JSON files directory (e.g., /path/to/project/src/lang)"
+        },
+        "kirby-i18n.defaultLanguage": {
+          "type": "string",
+          "default": "en",
+          "description": "Default language for translations"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.0"
+  }
+}
