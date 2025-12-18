@@ -1,60 +1,136 @@
-# Kirby i18n Translator
+# WL Translation Engine
 
-VS Code extension for managing translations in the Kirby Vue project.
+> Your i18n bestie for Vue projects. Auto-translate to 13 languages with one click.
 
 ## Features
 
-### IntelliSense Autocomplete
-Type `$t('` in Vue files to get autocomplete suggestions for all translation keys.
+### 1. Autocomplete Keys
+Type `$t('` and boom - all your translation keys pop up.
 
-### Hover Preview
-Hover over any `$t('key')` to see translations in all 13 languages.
+![autocomplete](https://img.shields.io/badge/trigger-$t('...'-blue)
 
-### Add Translation (Cmd+Shift+T)
-Add new translations directly from VS Code:
-1. Enter the translation key
-2. Enter the English text
-3. MyMemory API translates to 12 languages automatically
-4. Saves to all 13 JSON files
+### 2. Hover Preview
+Hover over any `$t('key')` to see translations in ALL 13 languages instantly.
 
-### Search Translation (Cmd+Shift+K)
-Quick search and insert translation keys.
+### 3. Quick Add (The Magic)
+Got a missing key? No problem.
+
+```vue
+{{ $t('Hello World') }}
+```
+
+1. Click on `Hello World`
+2. Press `Cmd + .` (Mac) or `Ctrl + .` (Windows)
+3. Click **"Add translation"**
+4. Done! Auto-translated to 13 languages
+
+### 4. Command Palette
+
+| Shortcut | Action |
+|----------|--------|
+| `Cmd+Shift+T` | Add new translation |
+| `Cmd+Shift+K` | Search & insert key |
 
 ## Supported Languages
-- English (en)
-- Chinese Simplified (zh_CN)
-- Chinese Traditional (zh_TW)
-- Malay (cn_MY)
-- Japanese (ja_JP)
-- Korean (ko_KR)
-- Thai (th_TH)
-- Vietnamese (vi_VN)
-- Indonesian (id_ID)
-- Khmer (km_KH)
-- Spanish (es_ES)
-- Portuguese (pt_BR)
-- Russian (ru_RU)
 
-## Configuration
+| Flag | Language |
+|------|----------|
+| 🇺🇸 | English |
+| 🇨🇳 | Chinese (Simplified) |
+| 🇹🇼 | Chinese (Traditional) |
+| 🇲🇾 | Malay |
+| 🇯🇵 | Japanese |
+| 🇰🇷 | Korean |
+| 🇹🇭 | Thai |
+| 🇻🇳 | Vietnamese |
+| 🇮🇩 | Indonesian |
+| 🇰🇭 | Khmer |
+| 🇪🇸 | Spanish |
+| 🇧🇷 | Portuguese |
+| 🇷🇺 | Russian |
+
+## Setup
+
+1. Install the extension
+2. Open your Vue project
+3. It auto-detects `src/lang/*.json` files
+4. Start typing `$t('` - that's it!
+
+### Custom Path (Optional)
+
+If your lang files are somewhere else:
 
 ```json
+// settings.json
 {
-  "kirby-i18n.langPath": "/path/to/your/lang/folder",
-  "kirby-i18n.defaultLanguage": "en"
+  "kirby-i18n.langPath": "/path/to/your/lang/folder"
 }
 ```
 
-## Development
+## How It Works
 
-```bash
-# Install dependencies
-npm install
-
-# Compile
-npm run compile
-
-# Watch mode
-npm run watch
+```
+You type: {{ $t('welcome_message') }}
+          ↓
+Extension checks if key exists
+          ↓
+If missing → Cmd+. → "Add translation"
+          ↓
+MyMemory API translates to 12 languages
+          ↓
+Saves to all 13 JSON files automatically
 ```
 
-Press F5 to launch the extension in debug mode.
+## Pro Tips
+
+- Keys are case-sensitive
+- Use `snake_case` for consistency
+- Refresh cache: `Cmd+Shift+P` → "WL: Refresh"
+
+## Requirements
+
+- VS Code 1.85+
+- Vue project with `src/lang/*.json` structure
+
+---
+
+## Changelog
+
+### v1.0.3 (Current)
+- Renamed to **WL Translation Engine**
+- Compressed icon for faster install
+- Updated README for better readability
+
+### v1.0.2
+- Added **Quick Add** feature (Cmd+. to add missing keys)
+- Auto-detect workspace `src/lang/` folder
+- New keys append to end of file (no reordering)
+
+### v1.0.1
+- Initial release
+- IntelliSense autocomplete for `$t('key')`
+- Hover preview with 13 languages
+- Command palette: Add & Search translations
+- MyMemory API integration
+- Auto-save to all 13 JSON files
+- File watcher for live reload
+
+---
+
+## What's Inside
+
+| Feature | Status |
+|---------|--------|
+| Autocomplete `$t('` | ✅ |
+| Hover translations | ✅ |
+| Quick add (Cmd+.) | ✅ |
+| Add translation command | ✅ |
+| Search key command | ✅ |
+| Auto-detect lang path | ✅ |
+| File watcher | ✅ |
+| 13 languages support | ✅ |
+| MyMemory API | ✅ |
+
+---
+
+Made with coffee by [@rithytep](https://github.com/rithytep)

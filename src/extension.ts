@@ -3,6 +3,7 @@ import { TranslationStore } from './services/translationStore';
 import { MyMemoryApi } from './services/myMemoryApi';
 import { registerCompletionProvider } from './providers/completionProvider';
 import { registerHoverProvider } from './providers/hoverProvider';
+import { registerCodeActionProvider } from './providers/codeActionProvider';
 import { registerAddTranslationCommand } from './commands/addTranslation';
 import { registerSearchTranslationCommand } from './commands/searchTranslation';
 
@@ -31,6 +32,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   registerCompletionProvider(context, translationStore);
   registerHoverProvider(context, translationStore);
+  registerCodeActionProvider(context, translationStore, myMemoryApi);
   registerAddTranslationCommand(context, translationStore, myMemoryApi);
   registerSearchTranslationCommand(context, translationStore);
 
