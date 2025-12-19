@@ -88,37 +88,36 @@ Add to your `.vscode/settings.json`:
 | `kirby-i18n.sourceLanguage` | `en` | Source language code for translations |
 | `kirby-i18n.customLanguages` | `{}` | Custom language definitions |
 
-## Supported Languages (Built-in)
+## Supported Languages (100+ Built-in)
 
-These languages are recognized automatically:
+The extension includes **100+ languages** with proper names and flag emojis:
 
-| Language | Code | Flag |
-|----------|------|------|
-| English | `en` | 🇺🇸 |
-| Chinese (Simplified) | `zh_CN` | 🇨🇳 |
-| Chinese (Traditional) | `zh_TW` | 🇹🇼 |
-| Malay | `cn_MY` | 🇲🇾 |
-| Japanese | `ja_JP` | 🇯🇵 |
-| Korean | `ko_KR` | 🇰🇷 |
-| Thai | `th_TH` | 🇹🇭 |
-| Vietnamese | `vi_VN` | 🇻🇳 |
-| Indonesian | `id_ID` | 🇮🇩 |
-| Khmer | `km_KH` | 🇰🇭 |
-| Spanish | `es_ES` | 🇪🇸 |
-| Portuguese | `pt_BR` | 🇧🇷 |
-| Russian | `ru_RU` | 🇷🇺 |
+**Popular Languages:**
+- 🇺🇸 English (`en`) • 🇨🇳 Chinese Simplified (`zh_CN`) • 🇹🇼 Chinese Traditional (`zh_TW`)
+- 🇯🇵 Japanese (`ja_JP`) • 🇰🇷 Korean (`ko_KR`) • 🇹🇭 Thai (`th_TH`) • 🇻🇳 Vietnamese (`vi_VN`)
+- 🇫🇷 French (`fr`, `fr_FR`) • 🇩🇪 German (`de`, `de_DE`) • 🇪🇸 Spanish (`es`, `es_ES`)
+- 🇮🇹 Italian (`it`, `it_IT`) • 🇵🇹 Portuguese (`pt`, `pt_BR`) • 🇷🇺 Russian (`ru_RU`)
+- 🇳🇱 Dutch (`nl`) • 🇵🇱 Polish (`pl`) • 🇺🇦 Ukrainian (`uk`) • 🇹🇷 Turkish (`tr`)
+- 🇸🇦 Arabic (`ar`) • 🇮🇱 Hebrew (`he`) • 🇮🇷 Persian (`fa`) • 🇮🇳 Hindi (`hi`)
 
-**Note:** Unknown language codes display as `🌐 CODE`. Use `customLanguages` setting to add names and flags.
+**Regional Languages:**
+- Southeast Asia: 🇮🇩 Indonesian, 🇲🇾 Malay, 🇵🇭 Filipino, 🇰🇭 Khmer, 🇱🇦 Lao, 🇲🇲 Myanmar
+- South Asia: 🇧🇩 Bengali, 🇮🇳 Tamil, Telugu, Marathi, Gujarati, 🇳🇵 Nepali, 🇱🇰 Sinhala
+- Europe: 🇸🇪 Swedish, 🇩🇰 Danish, 🇳🇴 Norwegian, 🇫🇮 Finnish, 🇨🇿 Czech, 🇭🇺 Hungarian, 🇷🇴 Romanian, 🇬🇷 Greek
+- Africa: 🇰🇪 Swahili, 🇿🇦 Afrikaans, 🇪🇹 Amharic
+
+**Note:** Unknown language codes display as `🌐 CODE`. Use `customLanguages` setting to add custom names and flags.
 
 ## How It Works
 
 1. Extension auto-detects `*.json` files in your language directory
 2. Watches for changes and updates in real-time
 3. Uses MyMemory API for auto-translation
-4. Supports any number of languages (not limited to 13!)
+4. Supports any number of languages (100+ built-in!)
 
-## What's New in v1.0.6
+## What's New in v1.0.7
 
+- **100+ built-in languages** - Proper names and flag emojis for most common languages
 - **Dynamic language detection** - Auto-detects from JSON files
 - **Configurable source language** - Not limited to English
 - **Custom language definitions** - Add any language with custom flags
