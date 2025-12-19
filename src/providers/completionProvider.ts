@@ -42,11 +42,13 @@ export class TranslationCompletionProvider implements vscode.CompletionItemProvi
       ? this.store.searchKeys(searchQuery)
       : this.store.getAllKeys();
 
+    const sourceLanguage = this.store.getSourceLanguage();
+
     return keys.slice(0, 100).map((key, index) => {
       const item = new vscode.CompletionItem(key, vscode.CompletionItemKind.Text);
 
-      const englishText = this.store.getTranslation(key, 'en') || '';
-      item.detail = englishText.length > 50 ? englishText.substring(0, 50) + '...' : englishText;
+      const sourceText = this.store.getTranslation(key, sourceLanguage) || '';
+      item.detail = sourceText.length > 50 ? sourceText.substring(0, 50) + '...' : sourceText;
 
       item.documentation = new vscode.MarkdownString(this.store.getFormattedPreview(key));
 

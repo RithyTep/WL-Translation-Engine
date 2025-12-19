@@ -1,4 +1,38 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <rect width="128" height="128" rx="16" fill="#4F46E5"/>
-  <text x="64" y="75" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">i18n</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1B4965"/>
+      <stop offset="100%" style="stop-color:#0D1B2A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="256" height="256" rx="40" ry="40" fill="url(#bgGrad)"/>
+
+  <!-- Globe outline -->
+  <g transform="translate(128, 128)" stroke="#5FA8D3" fill="none" stroke-width="4">
+    <circle cx="0" cy="0" r="60"/>
+    <ellipse cx="0" cy="0" rx="60" ry="25"/>
+    <ellipse cx="0" cy="0" rx="25" ry="60"/>
+    <line x1="-60" y1="0" x2="60" y2="0"/>
+    <path d="M -52 -30 Q 0 -20 52 -30" />
+    <path d="M -52 30 Q 0 20 52 30" />
+  </g>
+
+  <!-- Language symbols -->
+  <text x="95" y="115" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#CAE9FF">A</text>
+  <text x="145" y="155" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#CAE9FF">文</text>
+
+  <!-- Arrow between languages -->
+  <g stroke="#5FA8D3" stroke-width="3" fill="none">
+    <path d="M 115 120 L 140 140"/>
+    <path d="M 140 140 L 133 135"/>
+    <path d="M 140 140 L 135 147"/>
+  </g>
+
+  <!-- WL Badge -->
+  <g transform="translate(200, 56)">
+    <rect x="-30" y="-18" width="60" height="36" rx="8" ry="8" fill="#5FA8D3"/>
+    <text x="0" y="8" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="#0D1B2A" text-anchor="middle">WL</text>
+  </g>
 </svg>

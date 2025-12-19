@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { TranslationStore } from '../services/translationStore';
-import { MyMemoryApi } from '../services/myMemoryApi';
-import { LANGUAGES } from '../utils/languageConfig';
+import { MyMemoryApi, TranslationContext } from '../services/myMemoryApi';
 
 export class TranslationCodeActionProvider implements vscode.CodeActionProvider {
   private store: TranslationStore;
@@ -84,6 +83,16 @@ export async function addTranslationQuickCommand(
   key: string,
   defaultValue: string
 ): Promise<void> {
+  const availableLanguages = store.getAvailableLanguages();
+  const sourceLanguage = store.getSourceLanguage();
+
+  if (availableLanguages.length === 0) {
+    vscode.window.showWarningMessage(
+      'No language files detected. Please create at least one .json file in the language directory.'
+    );
+    return;
+  }
+
   await vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
@@ -92,12 +101,19 @@ export async function addTranslationQuickCommand(
     },
     async (progress) => {
       try {
+        const context: TranslationContext = {
+          sourceLanguage,
+          targetLanguages: availableLanguages,
+          customLanguages: store.getCustomLanguages()
+        };
+
         const translations = await api.translateToAllLanguages(
           defaultValue,
+          context,
           (lang, current, total) => {
-            const langInfo = LANGUAGES[lang];
+            const langInfo = store.getLanguageInfoForCode(lang);
             progress.report({
-              message: `${langInfo?.flag || ''} ${langInfo?.name || lang} (${current}/${total})`,
+              message: `${langInfo.flag} ${langInfo.name} (${current}/${total})`,
               increment: (1 / total) * 100
             });
           }
@@ -107,8 +123,9 @@ export async function addTranslationQuickCommand(
 
         await store.addTranslation(key, translations);
 
+        const langCount = availableLanguages.length;
         vscode.window.showInformationMessage(
-          `Translation "${key}" added to all 13 language files!`
+          `Translation "${key}" added to ${langCount} language file${langCount !== 1 ? 's' : ''}!`
         );
 
       } catch (error) {

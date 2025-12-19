@@ -11,28 +11,25 @@ export async function searchTranslationCommand(store: TranslationStore): Promise
   quickPick.matchOnDescription = true;
   quickPick.matchOnDetail = true;
 
+  const sourceLanguage = store.getSourceLanguage();
   const allKeys = store.getAllKeys();
-  const items: TranslationQuickPickItem[] = allKeys.slice(0, 200).map(key => {
-    const englishText = store.getTranslation(key, 'en') || '';
+
+  const createQuickPickItem = (key: string): TranslationQuickPickItem => {
+    const sourceText = store.getTranslation(key, sourceLanguage) || '';
     return {
       label: key,
-      description: englishText.length > 60 ? englishText.substring(0, 60) + '...' : englishText,
+      description: sourceText.length > 60 ? sourceText.substring(0, 60) + '...' : sourceText,
       key: key
     };
-  });
+  };
+
+  const items: TranslationQuickPickItem[] = allKeys.slice(0, 200).map(createQuickPickItem);
 
   quickPick.items = items;
 
   quickPick.onDidChangeValue(value => {
     if (value) {
-      const filtered = store.searchKeys(value).slice(0, 200).map(key => {
-        const englishText = store.getTranslation(key, 'en') || '';
-        return {
-          label: key,
-          description: englishText.length > 60 ? englishText.substring(0, 60) + '...' : englishText,
-          key: key
-        };
-      });
+      const filtered = store.searchKeys(value).slice(0, 200).map(createQuickPickItem);
       quickPick.items = filtered;
     } else {
       quickPick.items = items;

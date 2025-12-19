@@ -1,8 +1,8 @@
 {
   "name": "kirby-i18n",
   "displayName": "WL Translation Engine",
-  "description": "IntelliSense autocomplete, hover preview, and translation management for Vue i18n projects with 13 language support",
-  "version": "1.0.5",
+  "description": "IntelliSense autocomplete, hover preview, and translation management for Vue i18n projects with dynamic language support",
+  "version": "1.0.6",
   "publisher": "rithytep",
   "license": "MIT",
   "icon": "icon.png",
@@ -63,12 +63,34 @@
         "kirby-i18n.langPath": {
           "type": "string",
           "default": "",
-          "description": "Path to the language JSON files directory (e.g., /path/to/project/src/lang)"
+          "description": "Path to language JSON files directory relative to workspace (e.g., src/lang, locales). Auto-detects if empty."
         },
-        "kirby-i18n.defaultLanguage": {
+        "kirby-i18n.sourceLanguage": {
           "type": "string",
           "default": "en",
-          "description": "Default language for translations"
+          "description": "Source language code used as base for translations (e.g., en, zh_CN)"
+        },
+        "kirby-i18n.customLanguages": {
+          "type": "object",
+          "default": {},
+          "description": "Custom language definitions for unknown language codes",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Display name for the language"
+              },
+              "flag": {
+                "type": "string",
+                "description": "Flag emoji for the language"
+              },
+              "apiCode": {
+                "type": "string",
+                "description": "MyMemory API language code (e.g., fr-FR, de-DE)"
+              }
+            }
+          }
         }
       }
     }

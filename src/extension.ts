@@ -26,8 +26,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   );
 
   const keyCount = translationStore.getAllKeys().length;
+  const langCount = translationStore.getAvailableLanguages().length;
   vscode.window.showInformationMessage(
-    `Kirby i18n: Loaded ${keyCount} translation keys`
+    `Kirby i18n: Loaded ${keyCount} keys from ${langCount} languages`
   );
 
   registerCompletionProvider(context, translationStore);
@@ -41,8 +42,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     async () => {
       await translationStore!.initialize();
       const count = translationStore!.getAllKeys().length;
+      const langs = translationStore!.getAvailableLanguages().length;
       vscode.window.showInformationMessage(
-        `Kirby i18n: Refreshed ${count} translation keys`
+        `Kirby i18n: Refreshed ${count} keys from ${langs} languages`
       );
     }
   );

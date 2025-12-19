@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { LANGUAGE_ORDER, getLanguageInfo } from '../utils/languageConfig';
+import { getLanguageInfo, CustomLanguageConfig, LanguageInfo } from '../utils/languageConfig';
 
 export interface TranslationEntry {
   key: string;
@@ -12,20 +12,31 @@ export class TranslationStore {
   private translations: Map<string, Record<string, string>> = new Map();
   private keys: string[] = [];
   private langPath: string = '';
+  private availableLanguages: string[] = [];
+  private customLanguages: Record<string, CustomLanguageConfig> = {};
+  private sourceLanguage: string = 'en';
   private fileWatcher: vscode.FileSystemWatcher | undefined;
   private onDidChangeEmitter = new vscode.EventEmitter<void>();
   public onDidChange = this.onDidChangeEmitter.event;
 
   constructor() {
-    this.updateLangPath();
+    this.updateConfiguration();
   }
 
-  private updateLangPath(): void {
+  private updateConfiguration(): void {
     const config = vscode.workspace.getConfiguration('kirby-i18n');
     const configPath = config.get<string>('langPath');
+    this.customLanguages = config.get<Record<string, CustomLanguageConfig>>('customLanguages') || {};
+    this.sourceLanguage = config.get<string>('sourceLanguage') || 'en';
 
     if (configPath && configPath.trim()) {
-      this.langPath = configPath;
+      // If path is relative, resolve against workspace
+      const workspaceFolders = vscode.workspace.workspaceFolders;
+      if (workspaceFolders && workspaceFolders.length > 0 && !path.isAbsolute(configPath)) {
+        this.langPath = path.join(workspaceFolders[0].uri.fsPath, configPath);
+      } else {
+        this.langPath = configPath;
+      }
     } else {
       // Auto-detect from workspace
       const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -37,8 +48,37 @@ export class TranslationStore {
     }
   }
 
+  /**
+   * Detect available languages by scanning JSON files in the lang directory.
+   */
+  private detectLanguagesFromFiles(): string[] {
+    if (!this.langPath || !fs.existsSync(this.langPath)) {
+      return [];
+    }
+
+    try {
+      const files = fs.readdirSync(this.langPath);
+      const languages = files
+        .filter(file => file.endsWith('.json'))
+        .map(file => path.basename(file, '.json'))
+        .sort((a, b) => {
+          // Put source language first
+          if (a === this.sourceLanguage) return -1;
+          if (b === this.sourceLanguage) return 1;
+          return a.localeCompare(b);
+        });
+
+      console.log(`Detected ${languages.length} languages: ${languages.join(', ')}`);
+      return languages;
+    } catch (error) {
+      console.error('Error detecting languages:', error);
+      return [];
+    }
+  }
+
   public async initialize(): Promise<void> {
-    this.updateLangPath();
+    this.updateConfiguration();
+    this.availableLanguages = this.detectLanguagesFromFiles();
     await this.loadAllTranslations();
     this.setupFileWatcher();
   }
@@ -57,6 +97,8 @@ export class TranslationStore {
   }
 
   private async reload(): Promise<void> {
+    this.updateConfiguration();
+    this.availableLanguages = this.detectLanguagesFromFiles();
     await this.loadAllTranslations();
     this.onDidChangeEmitter.fire();
   }
@@ -65,7 +107,7 @@ export class TranslationStore {
     this.translations.clear();
     const allKeys = new Set<string>();
 
-    for (const langCode of LANGUAGE_ORDER) {
+    for (const langCode of this.availableLanguages) {
       const filePath = path.join(this.langPath, `${langCode}.json`);
 
       try {
@@ -90,11 +132,39 @@ export class TranslationStore {
     }
 
     this.keys = Array.from(allKeys).sort();
-    console.log(`Loaded ${this.keys.length} translation keys`);
+    console.log(`Loaded ${this.keys.length} translation keys from ${this.availableLanguages.length} languages`);
   }
 
   public getAllKeys(): string[] {
     return this.keys;
+  }
+
+  /**
+   * Get the list of detected/available languages.
+   */
+  public getAvailableLanguages(): string[] {
+    return this.availableLanguages;
+  }
+
+  /**
+   * Get the configured source language.
+   */
+  public getSourceLanguage(): string {
+    return this.sourceLanguage;
+  }
+
+  /**
+   * Get language info for a code, using custom languages from settings.
+   */
+  public getLanguageInfoForCode(langCode: string): LanguageInfo {
+    return getLanguageInfo(langCode, this.customLanguages);
+  }
+
+  /**
+   * Get custom languages configuration.
+   */
+  public getCustomLanguages(): Record<string, CustomLanguageConfig> {
+    return this.customLanguages;
   }
 
   public getTranslation(key: string, langCode: string): string | undefined {
@@ -113,12 +183,12 @@ export class TranslationStore {
     const lowerQuery = query.toLowerCase();
     return this.keys.filter(key =>
       key.toLowerCase().includes(lowerQuery) ||
-      this.getTranslation(key, 'en')?.toLowerCase().includes(lowerQuery)
+      this.getTranslation(key, this.sourceLanguage)?.toLowerCase().includes(lowerQuery)
     );
   }
 
   public async addTranslation(key: string, translations: Record<string, string>): Promise<void> {
-    for (const langCode of LANGUAGE_ORDER) {
+    for (const langCode of this.availableLanguages) {
       const filePath = path.join(this.langPath, `${langCode}.json`);
 
       try {
@@ -130,7 +200,7 @@ export class TranslationStore {
         }
 
         // Add new key at the end without sorting
-        data[key] = translations[langCode] || translations['en'] || '';
+        data[key] = translations[langCode] || translations[this.sourceLanguage] || '';
 
         fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + '\n', 'utf-8');
       } catch (error) {
@@ -152,12 +222,10 @@ export class TranslationStore {
     markdown += '| Language | Translation |\n';
     markdown += '|----------|-------------|\n';
 
-    for (const langCode of LANGUAGE_ORDER) {
-      const info = getLanguageInfo(langCode);
+    for (const langCode of this.availableLanguages) {
+      const info = this.getLanguageInfoForCode(langCode);
       const value = translations[langCode] || '-';
-      if (info) {
-        markdown += `| ${info.flag} ${info.name} | ${value} |\n`;
-      }
+      markdown += `| ${info.flag} ${info.name} | ${value} |\n`;
     }
 
     return markdown;

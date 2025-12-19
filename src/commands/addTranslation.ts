@@ -1,12 +1,21 @@
 import * as vscode from 'vscode';
 import { TranslationStore } from '../services/translationStore';
-import { MyMemoryApi } from '../services/myMemoryApi';
-import { LANGUAGES } from '../utils/languageConfig';
+import { MyMemoryApi, TranslationContext } from '../services/myMemoryApi';
 
 export async function addTranslationCommand(
   store: TranslationStore,
   api: MyMemoryApi
 ): Promise<void> {
+  const availableLanguages = store.getAvailableLanguages();
+  const sourceLanguage = store.getSourceLanguage();
+
+  if (availableLanguages.length === 0) {
+    vscode.window.showWarningMessage(
+      'No language files detected. Please create at least one .json file in the language directory.'
+    );
+    return;
+  }
+
   const key = await vscode.window.showInputBox({
     prompt: 'Enter the translation key',
     placeHolder: 'e.g., welcome_message, user_profile',
@@ -25,18 +34,19 @@ export async function addTranslationCommand(
     return;
   }
 
-  const englishText = await vscode.window.showInputBox({
-    prompt: 'Enter the English text',
+  const sourceInfo = store.getLanguageInfoForCode(sourceLanguage);
+  const sourceText = await vscode.window.showInputBox({
+    prompt: `Enter the ${sourceInfo.name} text`,
     placeHolder: 'e.g., Welcome to our application',
     validateInput: (value) => {
       if (!value || !value.trim()) {
-        return 'English text cannot be empty';
+        return `${sourceInfo.name} text cannot be empty`;
       }
       return null;
     }
   });
 
-  if (!englishText) {
+  if (!sourceText) {
     return;
   }
 
@@ -48,12 +58,19 @@ export async function addTranslationCommand(
     },
     async (progress) => {
       try {
+        const context: TranslationContext = {
+          sourceLanguage,
+          targetLanguages: availableLanguages,
+          customLanguages: store.getCustomLanguages()
+        };
+
         const translations = await api.translateToAllLanguages(
-          englishText,
+          sourceText,
+          context,
           (lang, current, total) => {
-            const langInfo = LANGUAGES[lang];
+            const langInfo = store.getLanguageInfoForCode(lang);
             progress.report({
-              message: `${langInfo?.flag || ''} ${langInfo?.name || lang} (${current}/${total})`,
+              message: `${langInfo.flag} ${langInfo.name} (${current}/${total})`,
               increment: (1 / total) * 100
             });
           }
@@ -63,8 +80,9 @@ export async function addTranslationCommand(
 
         await store.addTranslation(key, translations);
 
+        const langCount = availableLanguages.length;
         vscode.window.showInformationMessage(
-          `Translation "${key}" added to all 13 language files!`,
+          `Translation "${key}" added to ${langCount} language file${langCount !== 1 ? 's' : ''}!`,
           'Copy Usage'
         ).then(selection => {
           if (selection === 'Copy Usage') {
