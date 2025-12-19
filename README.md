@@ -1,149 +1,138 @@
-# WL-Translation-Engine
+# WL Translation Engine
 
-<div align="center">
+[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/RithyTep.kirby-i18n?label=VS%20Code%20Marketplace&logo=visual-studio-code&style=for-the-badge)](https://marketplace.visualstudio.com/items?itemName=RithyTep.kirby-i18n)
+[![Installs](https://img.shields.io/visual-studio-marketplace/i/RithyTep.kirby-i18n?style=for-the-badge)](https://marketplace.visualstudio.com/items?itemName=RithyTep.kirby-i18n)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
-[![GitHub Stars](https://img.shields.io/github/stars/RithyTep/WL-Translation-Engine?style=for-the-badge)](https://github.com/RithyTep/WL-Translation-Engine/stargazers)
+> Your i18n bestie for Vue projects. Auto-translate with dynamic language support.
 
-**A powerful, type-safe multi-language translation engine for modern web applications.**
-
-[Features](#features) • [Installation](#installation) • [Usage](#usage) • [API](#api) • [Contributing](#contributing)
-
-</div>
-
----
+![Demo](https://raw.githubusercontent.com/RithyTep/WL-Translation-Engine/main/demo.gif)
 
 ## Features
 
-- 🌍 **Multi-language Support** - Handle unlimited languages with ease
-- 🔒 **Type-safe** - Full TypeScript support with strict typing
-- ⚡ **Fast & Lightweight** - Minimal bundle size, maximum performance
-- 🔄 **Dynamic Loading** - Load translations on-demand
-- 📦 **Framework Agnostic** - Works with React, Angular, Vue, and vanilla JS
-- 🎯 **Interpolation** - Variable substitution in translations
-- 📁 **Namespace Support** - Organize translations by feature/module
+### Autocomplete for `$t()` keys
+
+Type `$t('` and get instant suggestions from all your translation files.
+
+### Hover Preview
+
+Hover any translation key to see all languages at once. No more file jumping.
+
+### Quick Add Missing Keys
+
+Missing a key? Select text, press `Cmd+.` / `Ctrl+.`, and add translations to all language files instantly.
+
+### Dynamic Language Detection
+
+The extension automatically detects languages from your JSON files. Add a new language file and it's instantly recognized!
+
+### Command Palette
+
+| Command | Shortcut | Description |
+|---------|----------|-------------|
+| Add Translation | `Cmd+Shift+T` | Add a new translation key |
+| Search & Insert | `Cmd+Shift+K` | Search existing keys and insert |
+| Refresh Cache | - | Reload all translation files |
 
 ## Installation
 
-```bash
-# npm
-npm install wl-translation-engine
+### From VS Code
 
-# yarn
-yarn add wl-translation-engine
+1. Open VS Code
+2. Press `Cmd+P` / `Ctrl+P`
+3. Type `ext install RithyTep.kirby-i18n`
+4. Press Enter
 
-# pnpm
-pnpm add wl-translation-engine
-```
+### From Marketplace
 
-## Quick Start
+[Install from VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=RithyTep.kirby-i18n)
 
-```typescript
-import { TranslationEngine } from 'wl-translation-engine';
+## Requirements
 
-// Initialize the engine
-const i18n = new TranslationEngine({
-  defaultLanguage: 'en',
-  fallbackLanguage: 'en',
-  languages: ['en', 'km', 'zh'],
-});
+- VS Code 1.85+
+- Vue/TypeScript/JavaScript project with language JSON files
 
-// Add translations
-i18n.addTranslations('en', {
-  greeting: 'Hello, {{name}}!',
-  welcome: 'Welcome to our app',
-});
+## Configuration
 
-i18n.addTranslations('km', {
-  greeting: 'សួស្តី, {{name}}!',
-  welcome: 'សូមស្វាគមន៍មកកាន់កម្មវិធីរបស់យើង',
-});
+Add to your `.vscode/settings.json`:
 
-// Use translations
-console.log(i18n.t('greeting', { name: 'Rithy' })); // Hello, Rithy!
+```json
+{
+  // Path to language files (relative to workspace)
+  "kirby-i18n.langPath": "src/lang",
 
-// Switch language
-i18n.setLanguage('km');
-console.log(i18n.t('greeting', { name: 'Rithy' })); // សួស្តី, Rithy!
-```
+  // Source language for translations (default: "en")
+  "kirby-i18n.sourceLanguage": "en",
 
-## API Reference
-
-### `TranslationEngine`
-
-| Method | Description |
-|--------|-------------|
-| `t(key, params?)` | Translate a key with optional parameters |
-| `setLanguage(lang)` | Change the current language |
-| `getLanguage()` | Get the current language |
-| `addTranslations(lang, translations)` | Add translations for a language |
-| `hasTranslation(key)` | Check if a translation exists |
-
-### Configuration Options
-
-```typescript
-interface TranslationConfig {
-  defaultLanguage: string;
-  fallbackLanguage?: string;
-  languages: string[];
-  interpolation?: {
-    prefix: string;  // default: '{{'
-    suffix: string;  // default: '}}'
-  };
+  // Custom language definitions for unknown codes
+  "kirby-i18n.customLanguages": {
+    "fr": {
+      "name": "French",
+      "flag": "🇫🇷",
+      "apiCode": "fr-FR"
+    },
+    "de": {
+      "name": "German",
+      "flag": "🇩🇪",
+      "apiCode": "de-DE"
+    }
+  }
 }
 ```
 
-## Framework Integration
+### Settings
 
-### React
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `kirby-i18n.langPath` | `src/lang` | Path to language JSON files directory |
+| `kirby-i18n.sourceLanguage` | `en` | Source language code for translations |
+| `kirby-i18n.customLanguages` | `{}` | Custom language definitions |
 
-```tsx
-import { useTranslation } from 'wl-translation-engine/react';
+## Supported Languages (100+ Built-in)
 
-function MyComponent() {
-  const { t, language, setLanguage } = useTranslation();
+The extension includes **100+ languages** with proper names and flag emojis:
 
-  return (
-    <div>
-      <h1>{t('welcome')}</h1>
-      <button onClick={() => setLanguage('km')}>ភាសាខ្មែរ</button>
-    </div>
-  );
-}
-```
+**Popular Languages:**
+- 🇺🇸 English (`en`) • 🇨🇳 Chinese Simplified (`zh_CN`) • 🇹🇼 Chinese Traditional (`zh_TW`)
+- 🇯🇵 Japanese (`ja_JP`) • 🇰🇷 Korean (`ko_KR`) • 🇹🇭 Thai (`th_TH`) • 🇻🇳 Vietnamese (`vi_VN`)
+- 🇫🇷 French (`fr`, `fr_FR`) • 🇩🇪 German (`de`, `de_DE`) • 🇪🇸 Spanish (`es`, `es_ES`)
+- 🇮🇹 Italian (`it`, `it_IT`) • 🇵🇹 Portuguese (`pt`, `pt_BR`) • 🇷🇺 Russian (`ru_RU`)
+- 🇳🇱 Dutch (`nl`) • 🇵🇱 Polish (`pl`) • 🇺🇦 Ukrainian (`uk`) • 🇹🇷 Turkish (`tr`)
+- 🇸🇦 Arabic (`ar`) • 🇮🇱 Hebrew (`he`) • 🇮🇷 Persian (`fa`) • 🇮🇳 Hindi (`hi`)
 
-### Angular
+**Regional Languages:**
+- Southeast Asia: 🇮🇩 Indonesian, 🇲🇾 Malay, 🇵🇭 Filipino, 🇰🇭 Khmer, 🇱🇦 Lao, 🇲🇲 Myanmar
+- South Asia: 🇧🇩 Bengali, 🇮🇳 Tamil, Telugu, Marathi, Gujarati, 🇳🇵 Nepali, 🇱🇰 Sinhala
+- Europe: 🇸🇪 Swedish, 🇩🇰 Danish, 🇳🇴 Norwegian, 🇫🇮 Finnish, 🇨🇿 Czech, 🇭🇺 Hungarian, 🇷🇴 Romanian, 🇬🇷 Greek
+- Africa: 🇰🇪 Swahili, 🇿🇦 Afrikaans, 🇪🇹 Amharic
 
-```typescript
-import { TranslationModule } from 'wl-translation-engine/angular';
+**Note:** Unknown language codes display as `🌐 CODE`. Use `customLanguages` setting to add custom names and flags.
 
-@NgModule({
-  imports: [TranslationModule.forRoot({ defaultLanguage: 'en' })]
-})
-export class AppModule {}
-```
+## How It Works
+
+1. Extension auto-detects `*.json` files in your language directory
+2. Watches for changes and updates in real-time
+3. Uses MyMemory API for auto-translation
+4. Supports any number of languages (100+ built-in!)
+
+## What's New in v1.0.7
+
+- **100+ built-in languages** - Proper names and flag emojis for most common languages
+- **Dynamic language detection** - Auto-detects from JSON files
+- **Configurable source language** - Not limited to English
+- **Custom language definitions** - Add any language with custom flags
+- **Workspace settings** - Configure per project in `.vscode/settings.json`
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Contributions are welcome! Please open an issue or submit a PR.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT © [RithyTep](https://github.com/RithyTep)
 
 ---
 
-<div align="center">
-
-**Made with ❤️ in Cambodia by [Rithy Tep](https://github.com/RithyTep)**
-
-[![Portfolio](https://img.shields.io/badge/Portfolio-rithytep.online-blue?style=flat-square)](https://portfolio.rithytep.online/)
-
-</div>
+**If this extension helps you, please consider:**
+- Giving it a ⭐ on [GitHub](https://github.com/RithyTep/WL-Translation-Engine)
+- Leaving a [review on the Marketplace](https://marketplace.visualstudio.com/items?itemName=RithyTep.kirby-i18n&ssr=false#review-details)
