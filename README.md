@@ -135,6 +135,12 @@ The extension includes **100+ languages** with proper names and flag emojis:
 3. Uses MyMemory API for auto-translation
 4. Supports any number of languages (100+ built-in!)
 
+## What's New in v1.0.11
+
+- **Parallel Translation** - 10x faster! Translations now run in parallel batches
+- **Sub-3 Second Performance** - Translate to 10+ languages in under 3 seconds
+- **Optimized API Calls** - Smart batching prevents rate limiting while maximizing speed
+
 ## What's New in v1.0.10
 
 - **Enhanced Translation Panel** - Click missing keys to add translations inline

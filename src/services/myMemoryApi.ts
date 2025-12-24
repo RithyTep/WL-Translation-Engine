@@ -53,7 +53,8 @@ export class MyMemoryApi {
   }
 
   /**
-   * Translate source text to all target languages.
+   * Translate source text to all target languages in parallel with batching.
+   * Uses concurrent requests for speed while respecting API limits.
    */
   public async translateToAllLanguages(
     sourceText: string,
@@ -70,26 +71,46 @@ export class MyMemoryApi {
     const langsToTranslate = targetLanguages.filter(lang => lang !== sourceLanguage);
     const total = langsToTranslate.length;
 
-    for (let i = 0; i < langsToTranslate.length; i++) {
-      const lang = langsToTranslate[i];
-      const targetLangInfo = getLanguageInfo(lang, customLanguages);
+    if (total === 0) {
+      return translations;
+    }
 
-      if (onProgress) {
-        onProgress(lang, i + 1, total);
-      }
+    // Batch size for concurrent requests (balance speed vs rate limiting)
+    const BATCH_SIZE = 10;
+    let completed = 0;
 
-      try {
-        translations[lang] = await this.translateText(
-          sourceText,
-          lang,
-          sourceLangInfo,
-          targetLangInfo
-        );
-        await this.delay(100);
-      } catch (error) {
-        console.error(`Failed to translate to ${lang}:`, error);
-        // Fallback to source text on error
-        translations[lang] = sourceText;
+    // Process in batches for parallel execution
+    for (let i = 0; i < langsToTranslate.length; i += BATCH_SIZE) {
+      const batch = langsToTranslate.slice(i, i + BATCH_SIZE);
+
+      const batchPromises = batch.map(async (lang) => {
+        const targetLangInfo = getLanguageInfo(lang, customLanguages);
+
+        try {
+          const translated = await this.translateText(
+            sourceText,
+            lang,
+            sourceLangInfo,
+            targetLangInfo
+          );
+          translations[lang] = translated;
+        } catch (error) {
+          console.error(`Failed to translate to ${lang}:`, error);
+          translations[lang] = sourceText;
+        }
+
+        completed++;
+        if (onProgress) {
+          onProgress(lang, completed, total);
+        }
+      });
+
+      // Execute batch in parallel
+      await Promise.all(batchPromises);
+
+      // Small delay between batches to avoid rate limiting (only if more batches remain)
+      if (i + BATCH_SIZE < langsToTranslate.length) {
+        await this.delay(50);
       }
     }
 
