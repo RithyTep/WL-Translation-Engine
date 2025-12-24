@@ -135,6 +135,14 @@ The extension includes **100+ languages** with proper names and flag emojis:
 3. Uses MyMemory API for auto-translation
 4. Supports any number of languages (100+ built-in!)
 
+## What's New in v1.0.9
+
+- **Smart Key Transformation** - Underscore keys auto-convert to readable text: `total_commission_earned` → "Total commission earned"
+- **Auto-Capitalize** - First letter automatically capitalized for proper English
+- **Batch Translation** - Add multiple keys at once with comma separation: `key1, key2, key3`
+- **Pre-filled Suggestions** - English text input pre-filled with smart suggestions from key names
+- **Bulk Quick Fix** - "Add all X missing translations" action when multiple keys are missing on a line
+
 ## What's New in v1.0.8
 
 - **Go to Definition** - Ctrl+Click on `$t('key')` to jump to the JSON file
