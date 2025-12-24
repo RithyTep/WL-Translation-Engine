@@ -2,7 +2,7 @@
   "name": "kirby-i18n",
   "displayName": "WL Translation Engine",
   "description": "IntelliSense autocomplete, hover preview, and translation management for Vue i18n projects with dynamic language support",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "publisher": "rithytep",
   "license": "MIT",
   "icon": "icon.png",
@@ -56,6 +56,26 @@
         "command": "kirby-i18n.refreshTranslationStatus",
         "title": "WL: Refresh Translation Status",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "kirby-i18n.addMissingTranslation",
+        "title": "Add Translation",
+        "icon": "$(add)"
+      },
+      {
+        "command": "kirby-i18n.addAllMissingForLanguage",
+        "title": "Add All Missing Translations",
+        "icon": "$(checklist)"
+      },
+      {
+        "command": "kirby-i18n.copyKey",
+        "title": "Copy Key",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "kirby-i18n.deleteKey",
+        "title": "Delete Key",
+        "icon": "$(trash)"
       }
     ],
     "menus": {
@@ -64,6 +84,28 @@
           "command": "kirby-i18n.refreshTranslationStatus",
           "when": "view == kirby-i18n.translationStatus",
           "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "kirby-i18n.addAllMissingForLanguage",
+          "when": "view == kirby-i18n.translationStatus && viewItem == language",
+          "group": "1_actions@1"
+        },
+        {
+          "command": "kirby-i18n.addMissingTranslation",
+          "when": "view == kirby-i18n.translationStatus && viewItem == missingKey",
+          "group": "1_actions@1"
+        },
+        {
+          "command": "kirby-i18n.copyKey",
+          "when": "view == kirby-i18n.translationStatus && viewItem == missingKey",
+          "group": "2_copy@1"
+        },
+        {
+          "command": "kirby-i18n.deleteKey",
+          "when": "view == kirby-i18n.translationStatus && viewItem == missingKey",
+          "group": "3_danger@1"
         }
       ]
     },

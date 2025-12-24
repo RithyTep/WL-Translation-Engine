@@ -135,6 +135,13 @@ The extension includes **100+ languages** with proper names and flag emojis:
 3. Uses MyMemory API for auto-translation
 4. Supports any number of languages (100+ built-in!)
 
+## What's New in v1.0.10
+
+- **Enhanced Translation Panel** - Click missing keys to add translations inline
+- **Bulk Actions** - Right-click language to "Add All Missing Translations" at once
+- **Context Menu** - Right-click missing keys to Add, Copy, or Delete
+- **Delete Key** - Remove translation keys from all language files
+
 ## What's New in v1.0.9
 
 - **Smart Key Transformation** - Underscore keys auto-convert to readable text: `total_commission_earned` → "Total commission earned"

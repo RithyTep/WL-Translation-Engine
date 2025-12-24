@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 import { TranslationStore } from '../services/translationStore';
+import { MyMemoryApi, TranslationContext } from '../services/myMemoryApi';
+import { keyToReadableText } from '../utils/keyTransform';
 
 interface LanguageStats {
   langCode: string;
@@ -116,16 +118,17 @@ export class TranslationStatusProvider implements vscode.TreeDataProvider<Transl
         key,
         vscode.TreeItemCollapsibleState.None,
         'missingKey',
+        langCode,
         undefined,
-        undefined
+        key
       );
 
       item.iconPath = new vscode.ThemeIcon('warning', new vscode.ThemeColor('charts.orange'));
-      item.tooltip = `Translation missing for "${key}"`;
+      item.tooltip = `Click to add translation for "${key}"\nRight-click for more options`;
       item.command = {
-        command: 'kirby-i18n.goToKey',
-        title: 'Go to Key',
-        arguments: [key]
+        command: 'kirby-i18n.addMissingTranslation',
+        title: 'Add Translation',
+        arguments: [key, langCode]
       };
 
       return item;
@@ -189,7 +192,8 @@ export class TranslationTreeItem extends vscode.TreeItem {
     public readonly collapsibleState: vscode.TreeItemCollapsibleState,
     public readonly contextValue: string,
     public readonly langCode?: string,
-    public readonly description?: string
+    public readonly description?: string,
+    public readonly keyName?: string
   ) {
     super(label, collapsibleState);
   }
@@ -197,7 +201,8 @@ export class TranslationTreeItem extends vscode.TreeItem {
 
 export function registerTranslationStatusProvider(
   context: vscode.ExtensionContext,
-  store: TranslationStore
+  store: TranslationStore,
+  api: MyMemoryApi
 ): TranslationStatusProvider {
   const provider = new TranslationStatusProvider(store);
 
@@ -235,6 +240,205 @@ export function registerTranslationStatusProvider(
     }
   );
   context.subscriptions.push(goToKeyCommand);
+
+  // Register add missing translation command (inline click)
+  const addMissingCommand = vscode.commands.registerCommand(
+    'kirby-i18n.addMissingTranslation',
+    async (key: string, _langCode?: string) => {
+      const availableLanguages = store.getAvailableLanguages();
+      const sourceLanguage = store.getSourceLanguage();
+
+      if (availableLanguages.length === 0) {
+        vscode.window.showWarningMessage('No language files detected.');
+        return;
+      }
+
+      const suggestedText = keyToReadableText(key);
+
+      const sourceInfo = store.getLanguageInfoForCode(sourceLanguage);
+      const sourceText = await vscode.window.showInputBox({
+        prompt: `Enter ${sourceInfo.name} text for "${key}"`,
+        value: suggestedText,
+        placeHolder: 'e.g., Welcome message'
+      });
+
+      if (!sourceText) {
+        return;
+      }
+
+      await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: `Adding "${key}"...`,
+          cancellable: false
+        },
+        async (progress) => {
+          try {
+            const translationContext: TranslationContext = {
+              sourceLanguage,
+              targetLanguages: availableLanguages,
+              customLanguages: store.getCustomLanguages()
+            };
+
+            const translations = await api.translateToAllLanguages(
+              sourceText,
+              translationContext,
+              (lang, current, total) => {
+                const langInfo = store.getLanguageInfoForCode(lang);
+                progress.report({
+                  message: `${langInfo.flag} ${langInfo.name} (${current}/${total})`,
+                  increment: (1 / total) * 100
+                });
+              }
+            );
+
+            await store.addTranslation(key, translations);
+            provider.refresh();
+
+            vscode.window.showInformationMessage(
+              `Translation "${key}" added to ${availableLanguages.length} language files!`
+            );
+          } catch (error) {
+            vscode.window.showErrorMessage(
+              `Failed: ${error instanceof Error ? error.message : String(error)}`
+            );
+          }
+        }
+      );
+    }
+  );
+  context.subscriptions.push(addMissingCommand);
+
+  // Register add all missing for language command (bulk)
+  const addAllMissingCommand = vscode.commands.registerCommand(
+    'kirby-i18n.addAllMissingForLanguage',
+    async (item: TranslationTreeItem) => {
+      if (!item.langCode) {
+        return;
+      }
+
+      const allKeys = store.getAllKeys();
+      const missingKeys: string[] = [];
+
+      for (const key of allKeys) {
+        const translations = store.getAllTranslations(key);
+        const value = translations?.[item.langCode];
+        if (!value || (typeof value === 'string' && value.trim() === '')) {
+          missingKeys.push(key);
+        }
+      }
+
+      if (missingKeys.length === 0) {
+        vscode.window.showInformationMessage('No missing translations for this language!');
+        return;
+      }
+
+      const langInfo = store.getLanguageInfoForCode(item.langCode);
+      const confirm = await vscode.window.showInformationMessage(
+        `Add ${missingKeys.length} missing translations for ${langInfo.flag} ${langInfo.name}?`,
+        { modal: true },
+        'Add All'
+      );
+
+      if (confirm !== 'Add All') {
+        return;
+      }
+
+      const availableLanguages = store.getAvailableLanguages();
+      const sourceLanguage = store.getSourceLanguage();
+
+      await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: `Adding ${missingKeys.length} translations...`,
+          cancellable: false
+        },
+        async (progress) => {
+          try {
+            for (let i = 0; i < missingKeys.length; i++) {
+              const key = missingKeys[i];
+              const readableText = keyToReadableText(key);
+
+              progress.report({
+                message: `[${i + 1}/${missingKeys.length}] "${key}"`,
+                increment: 0
+              });
+
+              const translationContext: TranslationContext = {
+                sourceLanguage,
+                targetLanguages: availableLanguages,
+                customLanguages: store.getCustomLanguages()
+              };
+
+              const translations = await api.translateToAllLanguages(
+                readableText,
+                translationContext,
+                (lang, current, total) => {
+                  const langInfoProgress = store.getLanguageInfoForCode(lang);
+                  progress.report({
+                    message: `[${i + 1}/${missingKeys.length}] ${langInfoProgress.flag} (${current}/${total})`,
+                    increment: (1 / (missingKeys.length * total)) * 100
+                  });
+                }
+              );
+
+              await store.addTranslation(key, translations);
+            }
+
+            provider.refresh();
+            vscode.window.showInformationMessage(
+              `${missingKeys.length} translations added!`
+            );
+          } catch (error) {
+            vscode.window.showErrorMessage(
+              `Failed: ${error instanceof Error ? error.message : String(error)}`
+            );
+          }
+        }
+      );
+    }
+  );
+  context.subscriptions.push(addAllMissingCommand);
+
+  // Register copy key command
+  const copyKeyCommand = vscode.commands.registerCommand(
+    'kirby-i18n.copyKey',
+    async (item: TranslationTreeItem) => {
+      const key = item.keyName || item.label;
+      await vscode.env.clipboard.writeText(`$t('${key}')`);
+      vscode.window.showInformationMessage(`Copied: $t('${key}')`);
+    }
+  );
+  context.subscriptions.push(copyKeyCommand);
+
+  // Register delete key command
+  const deleteKeyCommand = vscode.commands.registerCommand(
+    'kirby-i18n.deleteKey',
+    async (item: TranslationTreeItem) => {
+      const key = item.keyName || item.label;
+
+      const confirm = await vscode.window.showWarningMessage(
+        `Delete "${key}" from all language files?`,
+        { modal: true },
+        'Delete'
+      );
+
+      if (confirm !== 'Delete') {
+        return;
+      }
+
+      try {
+        await store.deleteTranslation(key);
+        provider.refresh();
+        vscode.window.showInformationMessage(`Deleted "${key}" from all language files.`);
+      } catch (error) {
+        vscode.window.showErrorMessage(
+          `Failed to delete: ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
+    }
+  );
+  context.subscriptions.push(deleteKeyCommand);
 
   return provider;
 }

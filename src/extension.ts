@@ -48,7 +48,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   registerDiagnosticsProvider(context, translationStore);
 
   // Sidebar
-  registerTranslationStatusProvider(context, translationStore);
+  registerTranslationStatusProvider(context, translationStore, myMemoryApi);
 
   // Commands
   registerAddTranslationCommand(context, translationStore, myMemoryApi);

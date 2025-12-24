@@ -250,6 +250,29 @@ export class TranslationStore {
     await this.reload();
   }
 
+  public async deleteTranslation(key: string): Promise<void> {
+    for (const langCode of this.availableLanguages) {
+      const filePath = path.join(this.langPath, `${langCode}.json`);
+
+      try {
+        if (fs.existsSync(filePath)) {
+          const content = fs.readFileSync(filePath, 'utf-8');
+          const data: Record<string, string> = JSON.parse(content);
+
+          if (key in data) {
+            delete data[key];
+            fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + '\n', 'utf-8');
+          }
+        }
+      } catch (error) {
+        console.error(`Error deleting key from ${langCode}.json:`, error);
+        throw error;
+      }
+    }
+
+    await this.reload();
+  }
+
   public getFormattedPreview(key: string): string {
     const translations = this.getAllTranslations(key);
     if (!translations) {
