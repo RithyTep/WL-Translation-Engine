@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { TranslationStore } from '../services/translationStore';
 import { MyMemoryApi, TranslationContext } from '../services/myMemoryApi';
+import { keyToReadableText, parseCommaSeparatedKeys } from '../utils/keyTransform';
 
 export async function addTranslationCommand(
   store: TranslationStore,
@@ -16,28 +17,57 @@ export async function addTranslationCommand(
     return;
   }
 
-  const key = await vscode.window.showInputBox({
-    prompt: 'Enter the translation key',
-    placeHolder: 'e.g., welcome_message, user_profile',
+  const keyInput = await vscode.window.showInputBox({
+    prompt: 'Enter translation key(s) - use comma to separate multiple keys',
+    placeHolder: 'e.g., welcome_message or key1, key2, key3',
     validateInput: (value) => {
       if (!value || !value.trim()) {
         return 'Key cannot be empty';
       }
-      if (store.keyExists(value.trim())) {
-        return `Key "${value}" already exists`;
+
+      const keys = parseCommaSeparatedKeys(value);
+      for (const key of keys) {
+        if (store.keyExists(key.trim())) {
+          return `Key "${key}" already exists`;
+        }
+        if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key.trim())) {
+          return `Key "${key}" must start with a letter or underscore and contain only alphanumeric characters`;
+        }
       }
       return null;
     }
   });
 
-  if (!key) {
+  if (!keyInput) {
     return;
   }
 
+  const keys = parseCommaSeparatedKeys(keyInput);
+  const isBatch = keys.length > 1;
+
+  if (isBatch) {
+    // Batch mode: auto-transform all keys
+    await processBatchKeys(store, api, keys, availableLanguages, sourceLanguage);
+  } else {
+    // Single key mode: prompt for English text (with suggestion)
+    await processSingleKey(store, api, keys[0], availableLanguages, sourceLanguage);
+  }
+}
+
+async function processSingleKey(
+  store: TranslationStore,
+  api: MyMemoryApi,
+  key: string,
+  availableLanguages: string[],
+  sourceLanguage: string
+): Promise<void> {
   const sourceInfo = store.getLanguageInfoForCode(sourceLanguage);
+  const suggestedText = keyToReadableText(key);
+
   const sourceText = await vscode.window.showInputBox({
     prompt: `Enter the ${sourceInfo.name} text`,
     placeHolder: 'e.g., Welcome to our application',
+    value: suggestedText, // Pre-fill with transformed key
     validateInput: (value) => {
       if (!value || !value.trim()) {
         return `${sourceInfo.name} text cannot be empty`;
@@ -94,6 +124,80 @@ export async function addTranslationCommand(
       } catch (error) {
         vscode.window.showErrorMessage(
           `Failed to add translation: ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
+    }
+  );
+}
+
+async function processBatchKeys(
+  store: TranslationStore,
+  api: MyMemoryApi,
+  keys: string[],
+  availableLanguages: string[],
+  sourceLanguage: string
+): Promise<void> {
+  // Show preview of transformations
+  const preview = keys.map(k => `  "${k}" → "${keyToReadableText(k)}"`).join('\n');
+
+  const proceed = await vscode.window.showInformationMessage(
+    `Add ${keys.length} translations?\n\n${preview}`,
+    { modal: true },
+    'Add All'
+  );
+
+  if (proceed !== 'Add All') {
+    return;
+  }
+
+  await vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: `Adding ${keys.length} translations...`,
+      cancellable: false
+    },
+    async (progress) => {
+      try {
+        for (let i = 0; i < keys.length; i++) {
+          const key = keys[i];
+          const readableText = keyToReadableText(key);
+
+          progress.report({
+            message: `Key ${i + 1}/${keys.length}: "${key}"`,
+            increment: 0
+          });
+
+          const context: TranslationContext = {
+            sourceLanguage,
+            targetLanguages: availableLanguages,
+            customLanguages: store.getCustomLanguages()
+          };
+
+          const translations = await api.translateToAllLanguages(
+            readableText,
+            context,
+            (lang, current, total) => {
+              const langInfo = store.getLanguageInfoForCode(lang);
+              progress.report({
+                message: `[${i + 1}/${keys.length}] ${langInfo.flag} ${langInfo.name} (${current}/${total})`,
+                increment: (1 / (keys.length * total)) * 100
+              });
+            }
+          );
+
+          await store.addTranslation(key, translations);
+        }
+
+        progress.report({ message: 'Saving to files...' });
+
+        const langCount = availableLanguages.length;
+        vscode.window.showInformationMessage(
+          `${keys.length} translations added to ${langCount} language file${langCount !== 1 ? 's' : ''}!`
+        );
+
+      } catch (error) {
+        vscode.window.showErrorMessage(
+          `Failed to add translations: ${error instanceof Error ? error.message : String(error)}`
         );
       }
     }

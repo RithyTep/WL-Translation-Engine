@@ -22,6 +22,26 @@ Hover any translation key to see all languages at once. No more file jumping.
 
 Missing a key? Select text, press `Cmd+.` / `Ctrl+.`, and add translations to all language files instantly.
 
+### Go to Definition
+
+`Ctrl+Click` on any `$t('key')` to jump directly to the translation in your JSON file.
+
+### Find All References
+
+Right-click on a translation key and select "Find All References" to see every usage across your codebase.
+
+### Missing Key Warnings
+
+Get instant visual feedback with squiggly underlines on missing translation keys. No more silent failures.
+
+### Extract to Translation
+
+Select any hardcoded text, press `Cmd+.` / `Ctrl+.`, and extract it to an i18n key with auto-translation.
+
+### Translation Status Sidebar
+
+See completion percentages for each language at a glance. Expand to see missing keys.
+
 ### Dynamic Language Detection
 
 The extension automatically detects languages from your JSON files. Add a new language file and it's instantly recognized!
@@ -114,6 +134,14 @@ The extension includes **100+ languages** with proper names and flag emojis:
 2. Watches for changes and updates in real-time
 3. Uses MyMemory API for auto-translation
 4. Supports any number of languages (100+ built-in!)
+
+## What's New in v1.0.8
+
+- **Go to Definition** - Ctrl+Click on `$t('key')` to jump to the JSON file
+- **Find All References** - Find every usage of a translation key
+- **Missing Key Warnings** - Visual diagnostics for undefined keys
+- **Extract to Translation** - Select text and extract to i18n with auto-translate
+- **Translation Status Sidebar** - See completion % per language with missing keys
 
 ## What's New in v1.0.7
 

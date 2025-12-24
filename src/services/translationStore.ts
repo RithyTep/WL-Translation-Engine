@@ -167,6 +167,44 @@ export class TranslationStore {
     return this.customLanguages;
   }
 
+  /**
+   * Get the language files directory path.
+   */
+  public getLangPath(): string {
+    return this.langPath;
+  }
+
+  /**
+   * Get the full file path for a specific language.
+   */
+  public getFilePathForLanguage(langCode: string): string {
+    return path.join(this.langPath, `${langCode}.json`);
+  }
+
+  /**
+   * Find the line number of a key in a language file.
+   * Returns 0-based line number, or -1 if not found.
+   */
+  public findKeyLineInFile(key: string, langCode: string): number {
+    const filePath = this.getFilePathForLanguage(langCode);
+    try {
+      if (!fs.existsSync(filePath)) {
+        return -1;
+      }
+      const content = fs.readFileSync(filePath, 'utf-8');
+      const lines = content.split('\n');
+      const keyPattern = new RegExp(`^\\s*"${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"\\s*:`);
+      for (let i = 0; i < lines.length; i++) {
+        if (keyPattern.test(lines[i])) {
+          return i;
+        }
+      }
+    } catch (error) {
+      console.error(`Error finding key in ${langCode}.json:`, error);
+    }
+    return -1;
+  }
+
   public getTranslation(key: string, langCode: string): string | undefined {
     return this.translations.get(key)?.[langCode];
   }

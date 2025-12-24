@@ -4,6 +4,10 @@ import { MyMemoryApi } from './services/myMemoryApi';
 import { registerCompletionProvider } from './providers/completionProvider';
 import { registerHoverProvider } from './providers/hoverProvider';
 import { registerCodeActionProvider } from './providers/codeActionProvider';
+import { registerDefinitionProvider } from './providers/definitionProvider';
+import { registerReferenceProvider } from './providers/referenceProvider';
+import { registerDiagnosticsProvider } from './providers/diagnosticsProvider';
+import { registerTranslationStatusProvider } from './providers/translationStatusProvider';
 import { registerAddTranslationCommand } from './commands/addTranslation';
 import { registerSearchTranslationCommand } from './commands/searchTranslation';
 
@@ -31,9 +35,22 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     `Kirby i18n: Loaded ${keyCount} keys from ${langCount} languages`
   );
 
+  // Core providers
   registerCompletionProvider(context, translationStore);
   registerHoverProvider(context, translationStore);
   registerCodeActionProvider(context, translationStore, myMemoryApi);
+
+  // Navigation providers
+  registerDefinitionProvider(context, translationStore);
+  registerReferenceProvider(context, translationStore);
+
+  // Diagnostics
+  registerDiagnosticsProvider(context, translationStore);
+
+  // Sidebar
+  registerTranslationStatusProvider(context, translationStore);
+
+  // Commands
   registerAddTranslationCommand(context, translationStore, myMemoryApi);
   registerSearchTranslationCommand(context, translationStore);
 
