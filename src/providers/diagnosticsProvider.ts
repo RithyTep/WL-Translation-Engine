@@ -60,10 +60,14 @@ export class TranslationDiagnosticsProvider {
     const diagnostics: vscode.Diagnostic[] = [];
     const text = document.getText();
 
+    // Separate patterns for single and double quotes to handle apostrophes in text
     const patterns = [
-      /\$t\(['"]([^'"]+)['"]\)/g,
-      /\bt\(['"]([^'"]+)['"]\)/g,
-      /i18n\.t\(['"]([^'"]+)['"]\)/g
+      /\$t\("([^"]+)"\)/g,
+      /\$t\('([^']+)'\)/g,
+      /\bt\("([^"]+)"\)/g,
+      /\bt\('([^']+)'\)/g,
+      /i18n\.t\("([^"]+)"\)/g,
+      /i18n\.t\('([^']+)'\)/g
     ];
 
     for (const pattern of patterns) {

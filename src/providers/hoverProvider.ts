@@ -41,10 +41,14 @@ export class TranslationHoverProvider implements vscode.HoverProvider {
     const line = document.lineAt(position);
     const lineText = line.text;
 
+    // Separate patterns for single and double quotes to handle apostrophes in text
     const patterns = [
-      /\$t\(['"]([^'"]+)['"]\)/g,
-      /\bt\(['"]([^'"]+)['"]\)/g,
-      /i18n\.t\(['"]([^'"]+)['"]\)/g
+      /\$t\("([^"]+)"\)/g,      // $t("key with 'apostrophe'")
+      /\$t\('([^']+)'\)/g,      // $t('key')
+      /\bt\("([^"]+)"\)/g,      // t("key with 'apostrophe'")
+      /\bt\('([^']+)'\)/g,      // t('key')
+      /i18n\.t\("([^"]+)"\)/g,  // i18n.t("key with 'apostrophe'")
+      /i18n\.t\('([^']+)'\)/g   // i18n.t('key')
     ];
 
     for (const pattern of patterns) {

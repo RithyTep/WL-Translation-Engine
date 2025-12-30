@@ -17,12 +17,18 @@ export class TranslationCompletionProvider implements vscode.CompletionItemProvi
     const lineText = document.lineAt(position).text;
     const textBeforeCursor = lineText.substring(0, position.character);
 
+    // Separate patterns for single and double quotes to handle apostrophes in text
     const patterns = [
-      /\$t\(['"]([^'"]*)?$/,
-      /\bt\(['"]([^'"]*)?$/,
-      /\$t\(\s*['"]([^'"]*)?$/,
-      /\bt\(\s*['"]([^'"]*)?$/,
-      /i18n\.t\(['"]([^'"]*)?$/
+      /\$t\("([^"]*)?$/,
+      /\$t\('([^']*)?$/,
+      /\bt\("([^"]*)?$/,
+      /\bt\('([^']*)?$/,
+      /\$t\(\s*"([^"]*)?$/,
+      /\$t\(\s*'([^']*)?$/,
+      /\bt\(\s*"([^"]*)?$/,
+      /\bt\(\s*'([^']*)?$/,
+      /i18n\.t\("([^"]*)?$/,
+      /i18n\.t\('([^']*)?$/
     ];
 
     let match: RegExpMatchArray | null = null;

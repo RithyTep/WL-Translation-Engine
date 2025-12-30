@@ -43,11 +43,14 @@ export class TranslationCodeActionProvider implements vscode.CodeActionProvider 
     const lineText = line.text;
     const actions: vscode.CodeAction[] = [];
 
-    // Find all $t('key') patterns in the line
+    // Separate patterns for single and double quotes to handle apostrophes in text
     const patterns = [
-      /\$t\(['"]([^'"]+)['"]\)/g,
-      /\bt\(['"]([^'"]+)['"]\)/g,
-      /i18n\.t\(['"]([^'"]+)['"]\)/g
+      /\$t\("([^"]+)"\)/g,
+      /\$t\('([^']+)'\)/g,
+      /\bt\("([^"]+)"\)/g,
+      /\bt\('([^']+)'\)/g,
+      /i18n\.t\("([^"]+)"\)/g,
+      /i18n\.t\('([^']+)'\)/g
     ];
 
     for (const pattern of patterns) {
@@ -96,9 +99,12 @@ export class TranslationCodeActionProvider implements vscode.CodeActionProvider 
     const lineText = line.text;
 
     const patterns = [
-      /\$t\(['"]([^'"]+)['"]\)/g,
-      /\bt\(['"]([^'"]+)['"]\)/g,
-      /i18n\.t\(['"]([^'"]+)['"]\)/g
+      /\$t\("([^"]+)"\)/g,
+      /\$t\('([^']+)'\)/g,
+      /\bt\("([^"]+)"\)/g,
+      /\bt\('([^']+)'\)/g,
+      /i18n\.t\("([^"]+)"\)/g,
+      /i18n\.t\('([^']+)'\)/g
     ];
 
     for (const pattern of patterns) {

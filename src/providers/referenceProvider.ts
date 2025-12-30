@@ -73,10 +73,14 @@ export class TranslationReferenceProvider implements vscode.ReferenceProvider {
     const line = document.lineAt(position);
     const lineText = line.text;
 
+    // Separate patterns for single and double quotes to handle apostrophes in text
     const patterns = [
-      /\$t\(['"]([^'"]+)['"]\)/g,
-      /\bt\(['"]([^'"]+)['"]\)/g,
-      /i18n\.t\(['"]([^'"]+)['"]\)/g
+      /\$t\("([^"]+)"\)/g,
+      /\$t\('([^']+)'\)/g,
+      /\bt\("([^"]+)"\)/g,
+      /\bt\('([^']+)'\)/g,
+      /i18n\.t\("([^"]+)"\)/g,
+      /i18n\.t\('([^']+)'\)/g
     ];
 
     for (const pattern of patterns) {
