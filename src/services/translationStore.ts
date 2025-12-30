@@ -285,11 +285,25 @@ export class TranslationStore {
 
     for (const langCode of this.availableLanguages) {
       const info = this.getLanguageInfoForCode(langCode);
-      const value = translations[langCode] || '-';
+      const rawValue = translations[langCode] || '-';
+      // Escape markdown special characters and truncate long values
+      const value = this.escapeMarkdownTableCell(rawValue);
       markdown += `| ${info.flag} ${info.name} | ${value} |\n`;
     }
 
     return markdown;
+  }
+
+  private escapeMarkdownTableCell(text: string): string {
+    // Escape pipe characters which break markdown tables
+    let escaped = text.replace(/\|/g, '\\|');
+    // Escape newlines
+    escaped = escaped.replace(/\n/g, ' ');
+    // Truncate very long values for readability
+    if (escaped.length > 100) {
+      escaped = escaped.substring(0, 97) + '...';
+    }
+    return escaped;
   }
 
   public dispose(): void {

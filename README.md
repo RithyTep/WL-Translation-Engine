@@ -135,6 +135,11 @@ The extension includes **100+ languages** with proper names and flag emojis:
 3. Uses MyMemory API for auto-translation
 4. Supports any number of languages (100+ built-in!)
 
+## What's New in v1.0.13
+
+- **Fixed Hover Preview** - Properly escape special characters (|, newlines) in translations
+- **Long Text Support** - Truncates very long translations in hover for better readability
+
 ## What's New in v1.0.12
 
 - **Simplified Key Input** - Removed batch comma-separated key feature for cleaner UX
