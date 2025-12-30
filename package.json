@@ -2,7 +2,7 @@
   "name": "kirby-i18n",
   "displayName": "WL Translation Engine",
   "description": "IntelliSense autocomplete, hover preview, and translation management for Vue i18n projects with dynamic language support",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "publisher": "rithytep",
   "license": "MIT",
   "icon": "icon.png",

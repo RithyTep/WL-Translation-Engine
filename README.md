@@ -135,6 +135,11 @@ The extension includes **100+ languages** with proper names and flag emojis:
 3. Uses MyMemory API for auto-translation
 4. Supports any number of languages (100+ built-in!)
 
+## What's New in v1.0.15
+
+- **Fixed Duplicate Matches** - No more duplicate Quick Fix actions or hover messages
+- **Negative Lookbehind** - Prevents `t()` pattern from matching `$t()` calls
+
 ## What's New in v1.0.14
 
 - **Apostrophe Support** - Keys with apostrophes now work correctly: `$t("player's wallet")`

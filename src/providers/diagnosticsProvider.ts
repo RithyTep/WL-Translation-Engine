@@ -61,11 +61,12 @@ export class TranslationDiagnosticsProvider {
     const text = document.getText();
 
     // Separate patterns for single and double quotes to handle apostrophes in text
+    // Use negative lookbehind (?<!\$) to prevent t() from matching $t()
     const patterns = [
       /\$t\("([^"]+)"\)/g,
       /\$t\('([^']+)'\)/g,
-      /\bt\("([^"]+)"\)/g,
-      /\bt\('([^']+)'\)/g,
+      /(?<!\$)\bt\("([^"]+)"\)/g,
+      /(?<!\$)\bt\('([^']+)'\)/g,
       /i18n\.t\("([^"]+)"\)/g,
       /i18n\.t\('([^']+)'\)/g
     ];

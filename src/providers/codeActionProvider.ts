@@ -44,14 +44,17 @@ export class TranslationCodeActionProvider implements vscode.CodeActionProvider 
     const actions: vscode.CodeAction[] = [];
 
     // Separate patterns for single and double quotes to handle apostrophes in text
+    // Use negative lookbehind (?<!\$) to prevent t() from matching $t()
     const patterns = [
       /\$t\("([^"]+)"\)/g,
       /\$t\('([^']+)'\)/g,
-      /\bt\("([^"]+)"\)/g,
-      /\bt\('([^']+)'\)/g,
+      /(?<!\$)\bt\("([^"]+)"\)/g,
+      /(?<!\$)\bt\('([^']+)'\)/g,
       /i18n\.t\("([^"]+)"\)/g,
       /i18n\.t\('([^']+)'\)/g
     ];
+
+    const addedKeys = new Set<string>();
 
     for (const pattern of patterns) {
       let match;
@@ -62,11 +65,12 @@ export class TranslationCodeActionProvider implements vscode.CodeActionProvider 
 
         // Check if cursor is on this key
         if (range.start.character >= keyStart && range.start.character <= keyEnd) {
-          // Check if key doesn't exist
-          if (!this.store.keyExists(key)) {
+          // Check if key doesn't exist and not already added
+          if (!this.store.keyExists(key) && !addedKeys.has(key)) {
             const action = this.createAddTranslationAction(document, key);
             if (action) {
               actions.push(action);
+              addedKeys.add(key);
             }
           }
         }
@@ -101,8 +105,8 @@ export class TranslationCodeActionProvider implements vscode.CodeActionProvider 
     const patterns = [
       /\$t\("([^"]+)"\)/g,
       /\$t\('([^']+)'\)/g,
-      /\bt\("([^"]+)"\)/g,
-      /\bt\('([^']+)'\)/g,
+      /(?<!\$)\bt\("([^"]+)"\)/g,
+      /(?<!\$)\bt\('([^']+)'\)/g,
       /i18n\.t\("([^"]+)"\)/g,
       /i18n\.t\('([^']+)'\)/g
     ];

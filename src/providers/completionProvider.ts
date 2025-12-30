@@ -18,15 +18,16 @@ export class TranslationCompletionProvider implements vscode.CompletionItemProvi
     const textBeforeCursor = lineText.substring(0, position.character);
 
     // Separate patterns for single and double quotes to handle apostrophes in text
+    // Use negative lookbehind (?<!\$) to prevent t() from matching $t()
     const patterns = [
       /\$t\("([^"]*)?$/,
       /\$t\('([^']*)?$/,
-      /\bt\("([^"]*)?$/,
-      /\bt\('([^']*)?$/,
+      /(?<!\$)\bt\("([^"]*)?$/,
+      /(?<!\$)\bt\('([^']*)?$/,
       /\$t\(\s*"([^"]*)?$/,
       /\$t\(\s*'([^']*)?$/,
-      /\bt\(\s*"([^"]*)?$/,
-      /\bt\(\s*'([^']*)?$/,
+      /(?<!\$)\bt\(\s*"([^"]*)?$/,
+      /(?<!\$)\bt\(\s*'([^']*)?$/,
       /i18n\.t\("([^"]*)?$/,
       /i18n\.t\('([^']*)?$/
     ];
