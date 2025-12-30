@@ -1,8 +1,7 @@
 /**
  * Key Transformation Utilities
  *
- * Provides functions to transform translation keys into readable text
- * and handle batch key processing.
+ * Provides functions to transform translation keys into readable text.
  */
 
 /**
@@ -36,44 +35,4 @@ export function keyToReadableText(key: string): string {
 
   // Capitalize first character only
   return lowercased.charAt(0).toUpperCase() + lowercased.slice(1);
-}
-
-/**
- * Parse comma-separated keys into an array of trimmed, unique keys.
- *
- * @param input - Comma-separated keys string (e.g., "key1, key2, key3")
- * @returns Array of unique, trimmed keys
- *
- * @example
- * parseCommaSeparatedKeys("key1,key2,key3") // ["key1", "key2", "key3"]
- * parseCommaSeparatedKeys("key1, key2 , key3") // ["key1", "key2", "key3"]
- * parseCommaSeparatedKeys("single_key") // ["single_key"]
- */
-export function parseCommaSeparatedKeys(input: string): string[] {
-  if (!input || typeof input !== 'string') {
-    return [];
-  }
-
-  const keys = input
-    .split(',')
-    .map(key => key.trim())
-    .filter(key => key.length > 0);
-
-  // Remove duplicates while preserving order
-  return [...new Set(keys)];
-}
-
-/**
- * Check if a string contains comma-separated keys (more than one key).
- *
- * @param input - The input string to check
- * @returns True if input contains multiple comma-separated keys
- *
- * @example
- * isCommaSeparatedKeys("key1,key2,key3") // true
- * isCommaSeparatedKeys("single_key") // false
- * isCommaSeparatedKeys("key1,") // false (only one valid key)
- */
-export function isCommaSeparatedKeys(input: string): boolean {
-  return parseCommaSeparatedKeys(input).length > 1;
 }

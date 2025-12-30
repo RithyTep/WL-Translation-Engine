@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { TranslationStore } from '../services/translationStore';
 import { MyMemoryApi, TranslationContext } from '../services/myMemoryApi';
-import { keyToReadableText, parseCommaSeparatedKeys, isCommaSeparatedKeys } from '../utils/keyTransform';
+import { keyToReadableText } from '../utils/keyTransform';
 
 export class TranslationCodeActionProvider implements vscode.CodeActionProvider {
   private store: TranslationStore;
@@ -42,7 +42,6 @@ export class TranslationCodeActionProvider implements vscode.CodeActionProvider 
     const line = document.lineAt(range.start.line);
     const lineText = line.text;
     const actions: vscode.CodeAction[] = [];
-    const allMissingKeysOnLine: string[] = [];
 
     // Find all $t('key') patterns in the line
     const patterns = [
@@ -58,11 +57,6 @@ export class TranslationCodeActionProvider implements vscode.CodeActionProvider 
         const keyStart = match.index + match[0].indexOf(key);
         const keyEnd = keyStart + key.length;
 
-        // Collect all missing keys for batch action
-        if (!this.store.keyExists(key) && !allMissingKeysOnLine.includes(key)) {
-          allMissingKeysOnLine.push(key);
-        }
-
         // Check if cursor is on this key
         if (range.start.character >= keyStart && range.start.character <= keyEnd) {
           // Check if key doesn't exist
@@ -76,30 +70,7 @@ export class TranslationCodeActionProvider implements vscode.CodeActionProvider 
       }
     }
 
-    // Add batch action if multiple missing keys on line
-    if (allMissingKeysOnLine.length > 1) {
-      const batchAction = this.createBatchTranslationAction(allMissingKeysOnLine);
-      if (batchAction) {
-        actions.push(batchAction);
-      }
-    }
-
     return actions;
-  }
-
-  private createBatchTranslationAction(keys: string[]): vscode.CodeAction | undefined {
-    const action = new vscode.CodeAction(
-      `Add all ${keys.length} missing translations`,
-      vscode.CodeActionKind.QuickFix
-    );
-
-    action.command = {
-      command: 'kirby-i18n.addTranslationQuick',
-      title: 'Add All Translations',
-      arguments: [keys.join(','), ''] // Comma-separated keys, empty default (will be computed per-key)
-    };
-
-    return action;
   }
 
   private getExtractAction(document: vscode.TextDocument, range: vscode.Range): vscode.CodeAction | undefined {
@@ -182,21 +153,11 @@ export class TranslationCodeActionProvider implements vscode.CodeActionProvider 
 export async function addTranslationQuickCommand(
   store: TranslationStore,
   api: MyMemoryApi,
-  keyOrKeys: string,
+  key: string,
   defaultValue: string
 ): Promise<void> {
-  // Check if this is a batch operation (comma-separated keys)
-  const keys = isCommaSeparatedKeys(keyOrKeys)
-    ? parseCommaSeparatedKeys(keyOrKeys)
-    : [keyOrKeys];
-
-  const isBatch = keys.length > 1;
-
-  // Filter out keys that already exist
-  const missingKeys = keys.filter(key => !store.keyExists(key));
-
-  if (missingKeys.length === 0) {
-    vscode.window.showInformationMessage('All keys already exist!');
+  if (store.keyExists(key)) {
+    vscode.window.showInformationMessage(`Key "${key}" already exists!`);
     return;
   }
 
@@ -210,65 +171,40 @@ export async function addTranslationQuickCommand(
     return;
   }
 
-  const title = isBatch
-    ? `Adding ${missingKeys.length} translations...`
-    : `Adding "${missingKeys[0]}"...`;
-
   await vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
-      title,
+      title: `Adding "${key}"...`,
       cancellable: false
     },
     async (progress) => {
       try {
-        for (let i = 0; i < missingKeys.length; i++) {
-          const key = missingKeys[i];
-          const readableText = isBatch ? keyToReadableText(key) : defaultValue;
+        const context: TranslationContext = {
+          sourceLanguage,
+          targetLanguages: availableLanguages,
+          customLanguages: store.getCustomLanguages()
+        };
 
-          if (isBatch) {
+        const translations = await api.translateToAllLanguages(
+          defaultValue,
+          context,
+          (lang, current, total) => {
+            const langInfo = store.getLanguageInfoForCode(lang);
             progress.report({
-              message: `Key ${i + 1}/${missingKeys.length}: "${key}"`,
-              increment: 0
+              message: `${langInfo.flag} ${langInfo.name} (${current}/${total})`,
+              increment: (1 / total) * 100
             });
           }
+        );
 
-          const context: TranslationContext = {
-            sourceLanguage,
-            targetLanguages: availableLanguages,
-            customLanguages: store.getCustomLanguages()
-          };
-
-          const translations = await api.translateToAllLanguages(
-            readableText,
-            context,
-            (lang, current, total) => {
-              const langInfo = store.getLanguageInfoForCode(lang);
-              const keyProgress = isBatch ? `[${i + 1}/${missingKeys.length}] ` : '';
-              progress.report({
-                message: `${keyProgress}${langInfo.flag} ${langInfo.name} (${current}/${total})`,
-                increment: isBatch ? (1 / (missingKeys.length * total)) * 100 : (1 / total) * 100
-              });
-            }
-          );
-
-          await store.addTranslation(key, translations);
-        }
+        await store.addTranslation(key, translations);
 
         progress.report({ message: 'Saving to files...' });
 
         const langCount = availableLanguages.length;
-        const keyCount = missingKeys.length;
-
-        if (isBatch) {
-          vscode.window.showInformationMessage(
-            `${keyCount} translations added to ${langCount} language file${langCount !== 1 ? 's' : ''}!`
-          );
-        } else {
-          vscode.window.showInformationMessage(
-            `Translation "${missingKeys[0]}" added to ${langCount} language file${langCount !== 1 ? 's' : ''}!`
-          );
-        }
+        vscode.window.showInformationMessage(
+          `Translation "${key}" added to ${langCount} language file${langCount !== 1 ? 's' : ''}!`
+        );
 
       } catch (error) {
         vscode.window.showErrorMessage(
